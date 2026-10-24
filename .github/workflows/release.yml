@@ -1,0 +1,90 @@
+name: Build and publish Velopack release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+# This repository is public. The built-in token publishes only release assets to this same repo.
+# No personal access token is required, and the application never opens the browser for updates.
+permissions:
+  contents: write
+
+env:
+  RELEASE_REPOSITORY_URL: https://github.com/${{ github.repository }}
+
+jobs:
+  release:
+    name: Build Windows release
+    runs-on: windows-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Validate release tag matches project version
+        shell: pwsh
+        run: |
+          $tag = $env:GITHUB_REF_NAME
+          if ($tag -notmatch '^v(?<version>\d+\.\d+\.\d+)$') {
+            throw "Invalid release tag '$tag'. Use vMAJOR.MINOR.PATCH, for example v1.0.0."
+          }
+          $tagVersion = $Matches['version']
+          [xml]$project = Get-Content 'src/LuaToolsGui.csproj' -Raw
+          $versions = @($project.Project.PropertyGroup | ForEach-Object { $_.Version } | Where-Object { $_ })
+          if ($versions.Count -eq 0) {
+            throw 'No <Version> value was found in src/LuaToolsGui.csproj.'
+          }
+          $projectVersion = [string]$versions[0]
+          if ($tagVersion -ne $projectVersion) {
+            throw "Tag version $tagVersion does not match project version $projectVersion. Update the .csproj <Version> before tagging."
+          }
+          "VERSION=$tagVersion" >> $env:GITHUB_ENV
+
+      - name: Restore and test
+        run: |
+          dotnet restore LuaToolsGui.sln
+          dotnet test LuaToolsGui.sln -c Release --no-restore
+
+      - name: Publish app files
+        run: dotnet publish src/LuaToolsGui.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=false -p:Version=${{ env.VERSION }} -o publish
+
+      - name: Install Velopack CLI
+        run: dotnet tool install --global vpk --version 1.2.0
+
+      - name: Check whether a previous release exists
+        id: previous
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $headers = @{
+            Authorization = "Bearer $env:GH_TOKEN"
+            Accept = 'application/vnd.github+json'
+            'X-GitHub-Api-Version' = '2022-11-28'
+          }
+          $uri = "https://api.github.com/repos/$env:GITHUB_REPOSITORY/releases?per_page=1"
+          $releases = @(Invoke-RestMethod -Method Get -Uri $uri -Headers $headers)
+          if ($releases.Count -gt 0) {
+            'has_release=true' >> $env:GITHUB_OUTPUT
+          } else {
+            'has_release=false' >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Download previous Velopack release assets
+        if: steps.previous.outputs.has_release == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: vpk download github --repoUrl $env:RELEASE_REPOSITORY_URL --outputDir Releases --token $env:GH_TOKEN
+
+      - name: Pack Velopack installer and update feed
+        run: vpk pack --packId AzaelX-Tools --packVersion ${{ env.VERSION }} --packDir publish --outputDir Releases --mainExe AzaelX-Tools.exe --packTitle AzaelX-Tools --packAuthors AzaelX --icon src/icon.ico --framework net8-x64-desktop
+
+      - name: Publish Velopack assets to this repository
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: vpk upload github --repoUrl $env:RELEASE_REPOSITORY_URL --outputDir Releases --publish --releaseName "AzaelX-Tools v${{ env.VERSION }}" --tag "v${{ env.VERSION }}" --token $env:GH_TOKEN
