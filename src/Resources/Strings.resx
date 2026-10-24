@@ -217,13 +217,13 @@
     <value>DEVICE ID (HASHED HWID)</value>
   </data>
   <data name="Auth_ListFormatHint" xml:space="preserve">
-    <value>Paste one device ID per line in the raw Pastebin content. Lines beginning with # are ignored.</value>
+    <value>Hwid</value>
   </data>
   <data name="Auth_Pending" xml:space="preserve">
-    <value>This device is not approved yet. Add this ID to the Pastebin allowlist, then check again.</value>
+    <value>This device is not approved yet</value>
   </data>
   <data name="Auth_Subtitle" xml:space="preserve">
-    <value>This device has not been approved yet. Copy the ID below and send it to the application owner.</value>
+    <value>This device has not been approved yet Copy the ID below and send it to the application owner</value>
   </data>
   <data name="Auth_Title" xml:space="preserve">
     <value>Device authorization</value>

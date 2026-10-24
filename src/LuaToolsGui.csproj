@@ -12,7 +12,7 @@
     <AssemblyTitle>AzaelX-Tools</AssemblyTitle>
     <Product>AzaelX-Tools</Product>
     <Company>AzaelX</Company>
-    <Version>1.0.2</Version>
+    <Version>1.0.3</Version>
     <ApplicationIcon>icon.ico</ApplicationIcon>
     <!-- Velopack needs a custom Main (Program.Main) that runs before WPF -->
     <StartupObject>LuaToolsGui.Program</StartupObject>

@@ -217,13 +217,13 @@
     <value>รหัสอุปกรณ์ (แฮช HWID)</value>
   </data>
   <data name="Auth_ListFormatHint" xml:space="preserve">
-    <value>ใส่รหัสอุปกรณ์หนึ่งรหัสต่อหนึ่งบรรทัดในเนื้อหา Pastebin แบบ raw โดยบรรทัดที่ขึ้นต้นด้วย # จะถูกข้าม</value>
+    <value>Hwid</value>
   </data>
   <data name="Auth_Pending" xml:space="preserve">
-    <value>อุปกรณ์นี้ยังไม่ได้รับอนุมัติ เพิ่มรหัสนี้ลงในรายการ Pastebin แล้วกดตรวจสอบอีกครั้ง</value>
+    <value>อุปกรณ์นี้ยังไม่ได้รับอนุมัติ</value>
   </data>
   <data name="Auth_Subtitle" xml:space="preserve">
-    <value>อุปกรณ์นี้ยังไม่ได้รับอนุมัติ คัดลอกรหัสด้านล่างแล้วส่งให้เจ้าของโปรแกรม</value>
+    <value>Copy id เเละส่งให้ Admin ได้เลย</value>
   </data>
   <data name="Auth_Title" xml:space="preserve">
     <value>การอนุมัติอุปกรณ์</value>
